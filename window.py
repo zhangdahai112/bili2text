@@ -68,19 +68,36 @@ def on_submit_click():
     thread.start()
 
 def process_video(av_number):
-    print("=" * 10)
-    print("正在下载视频...")
-    file_identifier = download_video(str(av_number))
-    print("=" * 10)
-    print("正在分割音频...")
-    # 使用音频模块处理
-    folder_name = process_audio_split(file_identifier)
-    print("=" * 10)
-    print("正在转换文本（可能耗时较长）...")
-    speech_to_text.run_analysis(folder_name, 
-        prompt="以下是普通话的句子。这是一个关于{}的视频。".format(file_identifier))
-    output_path = f"outputs/{folder_name}.txt"
-    print("转换完成！", output_path)
+    try:
+        print("=" * 10)
+        print("正在下载视频...")
+        file_identifier = download_video(str(av_number))
+        print("=" * 10)
+        print("正在分割音频...")
+        # 使用音频模块处理
+        folder_name = process_audio_split(file_identifier)
+        print("=" * 10)
+        print("正在转换文本（可能耗时较长）...")
+        speech_to_text.run_analysis(folder_name, 
+            prompt="以下是普通话的句子。这是一个关于{}的视频。".format(file_identifier))
+        output_path = f"outputs/{folder_name}.txt"
+        print("转换完成！", output_path)
+    except ValueError as e:
+        error_msg = str(e)
+        if "没有音频轨道" in error_msg:
+            print("错误: 视频文件没有音频轨道！")
+            print("可能原因:")
+            print("1. FFmpeg 未安装或未添加到系统 PATH 环境变量")
+            print("2. 视频文件确实没有音频")
+            print("\n解决方法:")
+            print("- 下载 FFmpeg: https://ffmpeg.org/download.html")
+            print("- 解压到文件夹（例如 C:\\ffmpeg）")
+            print("- 将 bin 目录添加到系统 PATH（例如 C:\\ffmpeg\\bin）")
+            print("- 重启程序")
+        else:
+            print(f"错误: {error_msg}")
+    except Exception as e:
+        print(f"处理视频时发生错误: {type(e).__name__}: {str(e)}")
 
 def on_generate_again_click():
     print("再次生成...")
